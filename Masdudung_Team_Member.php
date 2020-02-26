@@ -39,6 +39,16 @@ class Masdudung_Team_Member{
         'has_archive'   => true,
     );
 
+    function __construct()
+    {
+        add_action(
+            'post_edit_form_tag',
+            function() {
+                echo ' enctype="multipart/form-data"';
+            } 
+        );
+    }
+
 
     function custom_team_member() {
         $this->args['labels'] = $this->labels;
@@ -153,7 +163,7 @@ class Masdudung_Team_Member{
                             echo "<img src='$url' width='150px'><br>";
                         }
                         ?>
-						<input name="prefix-image" type="file" value="" aria-required="true" required multiple="false" enctype="multipart/form-data"  accept="image/x-png,image/gif,image/jpeg" />
+						<input name="prefix-image" type="file" required multiple="false" accept="image/x-png,image/gif,image/jpeg" />
                     </td>
                 </tr>
             </tbody>
@@ -169,16 +179,16 @@ class Masdudung_Team_Member{
             'prefix-position', 'prefix-email', 'prefix-phone', 'prefix-website'
         );
 
-//         foreach ($fields as $field) {
-//             # code...
-//             if (array_key_exists($field, $_POST)) {
-//                 update_post_meta(
-//                     $post_id,
-//                     $field,
-//                     $_POST[$field]
-//                 );
-//             }
-//         }
+        foreach ($fields as $field) {
+            # code...
+            if (array_key_exists($field, $_POST)) {
+                update_post_meta(
+                    $post_id,
+                    $field,
+                    $_POST[$field]
+                );
+            }
+        }
 
         // for image 
         if ( ! function_exists( 'wp_handle_upload' ) ) {
@@ -187,19 +197,15 @@ class Masdudung_Team_Member{
 		$image = $_FILES['prefix-image'];
 		$upload_overrides = array( 'test_form' => false );
         $image_meta_data = wp_handle_upload($image, $upload_overrides);
-		var_dump($image_meta_data);
-//         if($image_meta_data && ! isset( $image_meta_data['error'] ) )
-//         {
-//             update_post_meta(
-//                 $post_id,
-//                 'prefix-image',
-//                 $image_meta_data
-//             );
-//         }else{
-//             echo $image_meta_data['error'];
-//         }
-//         
-        
+        $attachment = array('guid' => $image_meta_data['url'], 'post_mime_type' => $image_meta_data['type'], 'post_title' => preg_replace('/\\.[^.]+$/', '', basename($file['name'])), 'post_content' => '', 'post_status' => 'inherit');
+        $id = wp_insert_attachment($attachment, $image_meta_data['file'], $post_id);
+
+        //save image metadata
+        update_post_meta(
+            $post_id,
+            'prefix-image',
+            $id
+        );
 
     }
 
