@@ -104,7 +104,7 @@ class Masdudung_Team_Member{
             # code...
             foreach ($attributes as $key => $attribute) {
                 # code...
-                if($attribute===true)
+                if($attribute==true)
                 {
                     echo $member[$key];
                     echo "<br>";
