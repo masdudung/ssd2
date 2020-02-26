@@ -87,24 +87,142 @@ class Masdudung_Team_Member{
         return $meta_boxes;
     }
 
+    function native_metabox()
+    {
+        add_meta_box(
+            'untitled',               // Unique ID
+            'Native Metabox',         // Box title
+            [$this, 'native_metabox_view'],  // Content callback, must be of type callable
+            'team_member'             // Post type
+        );
+        
+    }
+
+    function native_metabox_view($post)
+    {
+        $position = get_post_meta($post->ID, "prefix-position", true);
+        $email = get_post_meta($post->ID, "prefix-email", true);
+        $phone = get_post_meta($post->ID, "prefix-phone", true);
+        $website = get_post_meta($post->ID, "prefix-website", true);
+        $image = get_post_meta($post->ID, "prefix-image", true);
+
+?>
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <p>Position</p>
+                    </td>
+                    <td>
+                        <input type="text" name="prefix-position" value="<?php echo $position; ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>Email</p>
+                    </td>
+                    <td>
+                        <input type="text" name="prefix-email" value="<?php echo $email; ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>phone</p>
+                    </td>
+                    <td>
+                        <input type="text" name="prefix-phone" value="<?php echo $phone; ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>website</p>
+                    </td>
+                    <td>
+                        <input type="text" name="prefix-website" value="<?php echo $website; ?>">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p>Image</p>
+                    </td>
+                    <td>
+                        <?php 
+                        if($image)
+                        {
+                            $url = wp_get_attachment_url( $image );
+                            echo "<img src='$url' width='150px'><br>";
+                        }
+                        ?>
+						<input name="prefix-image" type="file" value="" aria-required="true" required multiple="false" enctype="multipart/form-data"  accept="image/x-png,image/gif,image/jpeg" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+<?php
+    }
+
+    function native_metabox_save($post_id)
+    {
+        
+        // save textbox
+        $fields = array(
+            'prefix-position', 'prefix-email', 'prefix-phone', 'prefix-website'
+        );
+
+//         foreach ($fields as $field) {
+//             # code...
+//             if (array_key_exists($field, $_POST)) {
+//                 update_post_meta(
+//                     $post_id,
+//                     $field,
+//                     $_POST[$field]
+//                 );
+//             }
+//         }
+
+        // for image 
+        if ( ! function_exists( 'wp_handle_upload' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/file.php' );
+		}
+		$image = $_FILES['prefix-image'];
+		$upload_overrides = array( 'test_form' => false );
+        $image_meta_data = wp_handle_upload($image, $upload_overrides);
+		var_dump($image_meta_data);
+//         if($image_meta_data && ! isset( $image_meta_data['error'] ) )
+//         {
+//             update_post_meta(
+//                 $post_id,
+//                 'prefix-image',
+//                 $image_meta_data
+//             );
+//         }else{
+//             echo $image_meta_data['error'];
+//         }
+//         
+        
+
+    }
+
     function get_member($atts)
     {	
         $attributes = shortcode_atts( 
                 array(
-                    'title' => true,
-                    'position' => true,
-                    'email' => true,
-                    'phone' => true,
-                    'image' => true,
+                    'title' => "true",
+                    'position' => "true",
+                    'email' => "true",
+                    'phone' => "true",
+                    'website' => "true",
+                    'image' => "true",
                 ), $atts
         );
 		
         $list_member = $this->_get_member();
+        
         foreach ($list_member as $member) {
             # code...
             foreach ($attributes as $key => $attribute) {
                 # code...
-                if($attribute==true)
+                if($attribute=="true")
                 {
                     echo $member[$key];
                     echo "<br>";
@@ -116,7 +234,6 @@ class Masdudung_Team_Member{
 
     private function _get_member()
     {
-        global $post;
 
         $prefix = $this->prefix;
         $data_post = array();
@@ -131,15 +248,16 @@ class Masdudung_Team_Member{
 
         $index = 0;
         while ($obituary_query->have_posts()) : $obituary_query->the_post();
+            $post_id = get_the_ID();
             $temp_data_post = array();
 
             $temp_data_post['title']      = get_the_title();
-            $temp_data_post['position']   = get_post_meta($post->ID, $prefix. 'position', true); // Use myinfo-box1, myinfo-box2, myinfo-box3 for respective fields 
-            $temp_data_post['email']      = get_post_meta($post->ID, $prefix. 'email', true);
-            $temp_data_post['phone']      = get_post_meta($post->ID, $prefix. 'phone', true);
-            $image_id                        = get_post_meta($post->ID, $prefix. 'image', true);
-			$images                          = rwmb_meta( $prefix. 'image', array( 'size' => 'thumbnail' ) );
-            $temp_data_post['image']      = $images[$image_id]['url'];
+            $temp_data_post['position']   = get_post_meta($post_id, $prefix. 'position', true); // Use myinfo-box1, myinfo-box2, myinfo-box3 for respective fields 
+            $temp_data_post['email']      = get_post_meta($post_id, $prefix. 'email', true);
+            $temp_data_post['phone']      = get_post_meta($post_id, $prefix. 'phone', true);
+            $temp_data_post['website']      = get_post_meta($post_id, $prefix. 'website', true);
+            $image_id                     = get_post_meta($post_id, $prefix. 'image', true);
+			$temp_data_post['image']      = wp_get_attachment_url( $image_id );
 
             $data_post[$index] = $temp_data_post; 
 
@@ -156,8 +274,9 @@ class Masdudung_Team_Member{
 
 $lala = new Masdudung_Team_Member();
 add_action( 'init', [$lala, 'custom_team_member'] );
-add_filter( 'rwmb_meta_boxes', [$lala, 'metabox'] );
 add_shortcode('all_members', [$lala, 'get_member']);
-
+// add_filter( 'rwmb_meta_boxes', [$lala, 'metabox'] ); // call metabox.io
+add_action('add_meta_boxes', [$lala, 'native_metabox']); // call native metabox
+add_action('save_post', [$lala, 'native_metabox_save']);
 
 ?>
