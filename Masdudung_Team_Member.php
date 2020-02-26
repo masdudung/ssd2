@@ -89,25 +89,29 @@ class Masdudung_Team_Member{
 
     function get_member($atts)
     {	
-        $attribute = shortcode_atts( 
+        $attributes = shortcode_atts( 
                 array(
-                    'type' => 'title',
+                    'title' => true,
+                    'position' => true,
+                    'email' => true,
+                    'phone' => true,
+                    'image' => true,
                 ), $atts
         );
-        $type = $attribute['type'];
 		
-		$list_member = $this->_get_member();
-        if( array_key_exists($attribute['type'], $list_member) )
-        {
-            foreach ($list_member[$type] as $key => $member) {
-                echo $member."<br>";
+        $list_member = $this->_get_member();
+        foreach ($list_member as $member) {
+            # code...
+            foreach ($attributes as $key => $attribute) {
+                # code...
+                if($attribute===true)
+                {
+                    echo $member[$key];
+                    echo "<br>";
+                }
             }
+            echo "<br>";
         }
-        else
-        {
-            echo "something wrong";
-        }
-
     }
 
     private function _get_member()
@@ -115,14 +119,7 @@ class Masdudung_Team_Member{
         global $post;
 
         $prefix = $this->prefix;
-        
-        $data_post = array(
-            'title' => array(),
-            'position' => array(),
-            'email' => array(),
-            'phone' => array(),
-            'image' => array()
-        );
+        $data_post = array();
 
         $args = array(
             'post_type' => 'team_member',
@@ -134,14 +131,17 @@ class Masdudung_Team_Member{
 
         $index = 0;
         while ($obituary_query->have_posts()) : $obituary_query->the_post();
+            $temp_data_post = array();
 
-            $data_post['title'][$index]      = get_the_title();
-            $data_post['position'][$index]   = get_post_meta($post->ID, $prefix. 'position', true); // Use myinfo-box1, myinfo-box2, myinfo-box3 for respective fields 
-            $data_post['email'][$index]      = get_post_meta($post->ID, $prefix. 'email', true);
-            $data_post['phone'][$index]      = get_post_meta($post->ID, $prefix. 'phone', true);
+            $temp_data_post['title']      = get_the_title();
+            $temp_data_post['position']   = get_post_meta($post->ID, $prefix. 'position', true); // Use myinfo-box1, myinfo-box2, myinfo-box3 for respective fields 
+            $temp_data_post['email']      = get_post_meta($post->ID, $prefix. 'email', true);
+            $temp_data_post['phone']      = get_post_meta($post->ID, $prefix. 'phone', true);
             $image_id                        = get_post_meta($post->ID, $prefix. 'image', true);
 			$images                          = rwmb_meta( $prefix. 'image', array( 'size' => 'thumbnail' ) );
-            $data_post['image'][$index]      = $images[$image_id]['url'];
+            $temp_data_post['image']      = $images[$image_id]['url'];
+
+            $data_post[$index] = $temp_data_post; 
 
             $index++;
         endwhile;
