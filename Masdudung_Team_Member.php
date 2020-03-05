@@ -27,7 +27,7 @@ class Masdudung_Team_Member{
         'search_items'       => 'Search Team Members',
         'not_found'          => 'No Team Members found',
         'not_found_in_trash' => 'No Team Members found in the Trash', 
-        'parent_item_colon'  => ’,
+        'parent_item_colon'  => '',
         'menu_name'          => 'Team Members'
     );
     
